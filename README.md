@@ -1,11 +1,17 @@
 ## Prerequisites
 
-1. Install tippecanoe
-2. Install mbutil
+### For running tippecanoe
+
+1. Install tippecanoe (https://github.com/mapbox/tippecanoe#installation)
+2. Install mbutil (https://github.com/mapbox/mbutil#installation)
   - git clone git://github.com/mapbox/mbutil.git
   - cd mbutil
   - sudo python setup.py install
+  
+### For running Yarn
 
+1- Install Yarn (Require Node)
+2- Install ` npm install http-server -g` (https://www.npmjs.com/package/http-server)
 
 ## Generate
 
@@ -16,6 +22,8 @@ Use tippecanoe and mbutil. See `scripts/chile.sh` for an example:
 
 # mb-util --image_format=pbf data/chile/transporters.mbtiles data/chile/transporters
 ```
+
+NOTE: Make sure the data folder is on the root folder.
 
 ## Serve 
 
