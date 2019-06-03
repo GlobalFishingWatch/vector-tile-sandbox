@@ -9,7 +9,7 @@ console.log(tiles,sourceLayer)
 var style = {
   "version": 8,
   "name": "Blank",
-  "center": [0, 0],
+  "center": [-80, -10],
   "zoom": 3,
   "bearing": 0,
   "pitch": 0,
