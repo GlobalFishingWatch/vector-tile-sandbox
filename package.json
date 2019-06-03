@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "server": "http-server data/. -p 9090 --cors",
+    "server": "http-server data/. -p 9090 --cors='*'",
     "viewer": "http-server viewer -p 9091"
   },
   "dependencies": {
