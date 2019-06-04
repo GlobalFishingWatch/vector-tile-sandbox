@@ -5,10 +5,53 @@ const es = require('event-stream')
 
 const inputPath = process.argv[2] 
 const outPath = process.argv[3] 
-const cellSide = process.argv[4] || 1
+const longitudeDivisions = process.argv[4] || 100
 
-const bbox = [-180,180,-40,40]
-const grid = turf.hexGrid(bbox, cellSide, {units: 'degrees'});
+const longitudeIncrement = 360 / longitudeDivisions
+const latitudeIncrement = longitudeIncrement
+const latitudeDivisions = 180 / latitudeIncrement
+const grid = {"type":"FeatureCollection","features":[] }
+
+for (let longitude = -180; longitude < longitudeDivisions; longitude++) {
+  for (let latitude = 0; latitude < latitudeDivisions; latitude++) {
+    grid.features.push({
+      "type": "Feature",
+      "properties": {
+        children: []
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              7.734374999999999,
+              46.558860303117164
+            ],
+            [
+              32.6953125,
+              46.558860303117164
+            ],
+            [
+              32.6953125,
+              62.75472592723178
+            ],
+            [
+              7.734374999999999,
+              62.75472592723178
+            ],
+            [
+              7.734374999999999,
+              46.558860303117164
+            ]
+          ]
+        ]
+      }
+    })
+  }
+}
+
+// const bbox = [-180,180,-40,40]
+// const grid = turf.hexGrid(bbox, cellSide, {units: 'degrees'});
 
 const numCells = grid.features.length
 console.log('grid total clusters:', numCells)
@@ -28,9 +71,9 @@ const readStream = fs.createReadStream(inputPath)
     for (let i =0; i<numCells; i++) {
       const cell =  grid.features[i]
       if (turf.booleanPointInPolygon(pt, cell)) {
-        if (!cell.properties.children) {
-          cell.properties.children = []
-        }
+        // if (!cell.properties.children) {
+        //   cell.properties.children = []
+        // }
         cell.children.push(pt)
         break
       }

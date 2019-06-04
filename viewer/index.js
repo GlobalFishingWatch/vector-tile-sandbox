@@ -20,10 +20,10 @@ var style = {
       },
       "points": {
         "type": "vector",
-        tiles,
-        // "tiles": [
-        //   "https://api-dot-world-fishing-827.appspot.com/v2/tilesets/test-chile-seconds-transport-v1/{z}%2F{x}%2F{y}.pbf"
-        // ]
+        // tiles,
+        "tiles": [
+          "https://api-dot-world-fishing-827.appspot.com/v2/tilesets/test-chile-seconds-transport-v2/{z}%2F{x}%2F{y}.pbf"
+        ]
       }
   },
   "layers": [
@@ -43,8 +43,8 @@ var style = {
         "id": "points",
         "type": "circle",
         "source": "points",
-        "source-layer": sourceLayer,
-        // "source-layer": "chile_transport",
+        // "source-layer": sourceLayer,
+        "source-layer": "chile_transport",
         "layout": {},
         "paint": {
           "circle-radius": 3,
