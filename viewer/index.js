@@ -1,7 +1,7 @@
 
 var url = new URL(window.location)
 var dataset = url.searchParams.get("dataset") || "chile/transporters"
-var sourceLayer = url.searchParams.get("sourceLayer") || dataset
+var sourceLayer = url.searchParams.get("sourceLayer") || dataset.replace('/', '_')
 
 const tiles = [`http://localhost:9090/${dataset}/{z}/{x}/{y}.pbf`]
 console.log(tiles,sourceLayer)
@@ -20,6 +20,7 @@ var style = {
       },
       "points": {
         "type": "vector",
+        "maxzoom": 9,
         tiles,
         // "tiles": [
         //   "https://api-dot-world-fishing-827.appspot.com/v2/tilesets/test-chile-seconds-transport-v1/{z}%2F{x}%2F{y}.pbf"
