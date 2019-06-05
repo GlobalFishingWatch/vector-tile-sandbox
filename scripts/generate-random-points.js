@@ -29,7 +29,8 @@ while (points.length < numFeatures) {
     'type': 'Feature',
     'properties': {
       datetime: randomDatetime,
-      fishing: Math.random()
+      // fishing: Math.random()
+      fishing: Math.floor(Math.random() * 10)
       // series: i++,
       // type: Math.floor(Math.random()*5)
     },

@@ -52,7 +52,7 @@ Use url params to load correct tileset:
 - `dataset`: path to dataset, appended to local server url and prepended to zxy
 - `sourceLayer`: matches tippecanoe param `--layer` 
 
-http://localhost:9091/?dataset=chile/transporters&sourceLayer=chile_transporters
+http://localhost:9091/viewer/?dataset=chile/transporters&sourceLayer=chile_transporters
 
 ## Inspect a tile
 
