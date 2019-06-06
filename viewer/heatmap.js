@@ -321,18 +321,18 @@ const applyFilter = () => {
     // ]
 
     // Sum of properties (ie "fishing12345") - slow
-    // const timestamps = (new Array(10)).fill(null).map((v, i) => {
-    //   return ["to-number", ["get", `fishing${frame + i}`]]
-    // })
-    // const timestampsSum = ['+'].concat(timestamps)
-    // const heatmapWeightExpr = [
-    //   '*',
-    //   timestampsSum,
-    //   3
-    // ]
+    const timestamps = (new Array(10)).fill(null).map((v, i) => {
+      return ["to-number", ["get", `fishing${frame + i}`]]
+    })
+    const timestampsSum = ['+'].concat(timestamps)
+    const heatmapWeightExpr = [
+      '*',
+      timestampsSum,
+      3
+    ]
 
     // Just get - ing value - medium
-    const heatmapWeightExpr = ["to-number", ["get", `fishing${frame}`]]
+    // const heatmapWeightExpr = ["to-number", ["get", `fishing${frame}`]]
 
     // Just checking value existence - medium
     // const heatmapWeightExpr = ["case", ["has", `fishing${frame}`], 0, 5]
@@ -369,7 +369,7 @@ const loadMap = () => {
 }
 
 if (!useTiles) {
-  fetch('../data/heatmap/heatmap_gridded_1M_5deg_15kitvs_bools.json')
+  fetch('../data/heatmap/heatmap_gridded_1M_5deg_15kitvs_ints.json')
     .then(res => res.json())
     .then(heatmapData => {
       console.log('loaded')
