@@ -20,7 +20,7 @@ var style = {
       },
       "points": {
         "type": "vector",
-        "maxzoom": 9,
+        "maxzoom": 6,
         tiles,
         // "tiles": [
         //   "https://api-dot-world-fishing-827.appspot.com/v2/tilesets/test-chile-seconds-transport-v1/{z}%2F{x}%2F{y}.pbf"
@@ -50,7 +50,12 @@ var style = {
         "paint": {
           "circle-radius": 3,
           "circle-color": "hsl(0, 100%, 77%)"
-        }
+        },
+      //   "filter": [
+      //     "all",
+      //     [">", "timestamp", (new Date(2018, 0, 1).getTime()) / 1000],
+      //     ["<", "timestamp", (new Date(2019, 0, 1).getTime()) / 1000]
+      // ]
       }
   ]
 }
@@ -65,9 +70,55 @@ map.showTileBoundaries = true
 map.on('click', 'points', function (e) {
   const feature = e.features[0]
 
-  document.querySelector('#info').innerText = `
-    ${Object.keys(feature.properties).map(k => {
-      return `${k}:${feature.properties[k]}`
-    }).join(', ')}
-  `
+  console.log(e.features.map(f => f.properties))
 });
+
+let start = new Date(2018, 0, 1).getTime()
+let end = new Date(2019, 1, 1).getTime()
+const INTERVAL = 89280000
+
+let frame = 0
+const applyFilter = () => {
+
+  console.log(frame)
+  start += INTERVAL
+  end += INTERVAL
+
+  // const filter = [
+  //   "all",
+  //   [">", "timestamp", start / 1000],
+  //   ["<", "timestamp", end / 1000]
+  // ]
+
+  // map.setFilter('points', filter)
+
+  const expr = 
+    ['case',
+      ['all',
+        ['>', ["get", "timestamp"], start / 1000],
+        ['<', ["get", "timestamp"], end / 1000],
+      ],
+      3,
+      0
+    ]
+
+  map.setPaintProperty('points', 'circle-radius', expr, {
+    validate: false
+  })
+
+  console.log(expr)
+
+  frame++
+}
+
+let interval
+document.querySelector('button').addEventListener('click', () => {
+  if (frame === 0) {
+    interval = setInterval(() => {
+      applyFilter()
+    }, 50)
+  } else {
+    clearInterval(interval)
+  }
+})
+
