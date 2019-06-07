@@ -8,6 +8,7 @@ const request = require("request");
 const fs = require('fs')
 
 const tilePath = process.argv[2]
+console.log(tilePath)
 
 if (tilePath === undefined) {
   console.error('Omitted tile path. Use: ./inspect-vector-tile path/to/tile.pbf')
@@ -47,7 +48,7 @@ if (tilePath.substr(0, 4) === 'http') {
   });
   return
 } else {
-  fs.readFileSync(tilePath)
+  readTile(fs.readFileSync(tilePath))
 }
 
 
