@@ -17,8 +17,8 @@
 
 # panama 128 hour array ---
 # --no-tile-compression
-tippecanoe data/chile/panama_carriers.csv -o data/chile/panama_carriers_hour_128_arr.mbtiles --force --layer=test  --minimum-zoom=5 --maximum-zoom=5 --read-parallel --no-feature-limit --no-tile-size-limit -r1 -C 'node --max-old-space-size=8192 scripts/make-grid-tippecanoe.js $1 $2 $3 128 1325376000 day true false true'
+tippecanoe data/chile/panama_carriers.csv -o data/chile/panama_carriers_hour_128.mbtiles --force --layer=test --minimum-zoom=5 --maximum-zoom=5 --read-parallel --no-feature-limit --no-tile-size-limit -r1 -C 'node --max-old-space-size=8192 scripts/make-grid-tippecanoe.js $1 $2 $3 128 1325376000 hour false false'
 echo 'tippecanoe ok'
 
-rm -rf data/chile/panama_carriers_hour_128_arr
-mb-util --image_format=pbf data/chile/panama_carriers_hour_128_arr.mbtiles data/chile/panama_carriers_hour_128_arr --silent
+rm -rf data/chile/panama_carriers_hour_128
+mb-util --image_format=pbf data/chile/panama_carriers_hour_128.mbtiles data/chile/panama_carriers_hour_128 --silent

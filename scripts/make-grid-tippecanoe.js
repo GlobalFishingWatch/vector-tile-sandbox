@@ -148,7 +148,6 @@ stdin.on('end', function () {
     }
     
     const testJSON = {"type":"FeatureCollection","features": cells }
-    // fs.writeFileSync(`./data/test-out/${z}${x}${y}`, 
     // [[x,y,z], [minLng, minLat, maxLng, maxLat], cellSizeLng, cellSizeLat, cells.length, JSON.stringify(testJSON)].join('\n'))
     
     const outJSON = cells.map(f => JSON.stringify(f)).join('\n')

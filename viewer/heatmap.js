@@ -293,11 +293,12 @@ var style = {
         "type": "circle",
         "source": (useTiles) ? "heatmap-tiles" : "heatmap",
         "layout": {
-          "visibility": "none"
+          "visibility": "visible"
         },
         "paint": {
           "circle-radius": 1,
-          "circle-opacity": 0,
+          "circle-opacity": 1,
+          "circle-color": "hsl(100, 50%, 50%)",
           "circle-stroke-width": .5,
           "circle-stroke-color": "hsl(0, 0%, 0%)"
         }
@@ -367,7 +368,12 @@ const loadMap = () => {
   })
   map.showTileBoundaries = true
 
-  map.on('click', () => {
+  map.on('click', (e) => {
+    console.log(map.queryRenderedFeatures(
+      // [e.lngLat.lng, e.lngLat.lat],
+      { layers: ['points'] }
+    ))
+    return
     map.setLayoutProperty('heatmap', 'visibility', 'none')
     const f = map.querySourceFeatures('heatmap-tiles', {
       sourceLayer
