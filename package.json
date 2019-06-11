@@ -4,15 +4,17 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "server": "http-server data/. -p 9090 --cors='*'",
+    "server": "http-server data/. -p 9090 --gzip --cors='*'",
     "viewer": "http-server -p 9091"
   },
   "dependencies": {
+    "@mapbox/tilebelt": "^1.0.1",
     "@mapbox/vector-tile": "^1.3.1",
     "@turf/turf": "^5.1.6",
     "JSONStream": "^1.3.5",
     "event-stream": "^4.0.1",
     "http-server": "^0.11.1",
+    "node-static": "^0.7.11",
     "pbf": "^3.2.0",
     "request": "^2.88.0",
     "turf": "^3.0.14"

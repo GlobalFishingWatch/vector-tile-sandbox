@@ -166,10 +166,18 @@ var testData = {
   ]
 }
 
-const baseIntensity = .75;
-const baseRadius = 40;
+var url = new URL(window.location)
+var dataset = url.searchParams.get("dataset") || "chile/transporters"
+var sourceLayer = url.searchParams.get("sourceLayer") || dataset.replace('/', '_')
 
-const useTiles = false
+const tiles = [`http://localhost:9090/${dataset}/{z}/{x}/{y}.pbf`]
+console.log(tiles,sourceLayer)
+
+
+const baseIntensity = .3;
+const baseRadius = 10;
+
+const useTiles = true
 
 var style = {
   "version": 8,
@@ -189,9 +197,9 @@ var style = {
       },
       "heatmap-tiles": {
         type: "vector",
-        tiles: ['http://127.0.0.1:9090/heatmap/tiles/{z}/{x}/{y}.pbf'],
+        tiles,
         minzoom: 0,
-        maxzoom: 3,
+        maxzoom: 6,
       }
   },
   "layers": [
@@ -285,22 +293,24 @@ var style = {
         "type": "circle",
         "source": (useTiles) ? "heatmap-tiles" : "heatmap",
         "layout": {
-          "visibility": "visible"
+          "visibility": "none"
         },
         "paint": {
-          "circle-radius": 3,
-          "circle-color": "hsl(180, 100%, 50%)"
+          "circle-radius": 1,
+          "circle-opacity": 0,
+          "circle-stroke-width": .5,
+          "circle-stroke-color": "hsl(0, 0%, 0%)"
         }
       }
   ]
 }
 
 if (useTiles) {
-  style.layers[2]['source-layer'] = 'heatmap'
-  style.layers[3]['source-layer'] = 'heatmap'
+  style.layers[2]['source-layer'] = sourceLayer
+  style.layers[3]['source-layer'] = sourceLayer
 }
 
-let frame = 0
+let frame = 00
 let map
 
 const applyFilter = () => {
@@ -321,18 +331,19 @@ const applyFilter = () => {
     // ]
 
     // Sum of properties (ie "fishing12345") - slow
-    const timestamps = (new Array(10)).fill(null).map((v, i) => {
-      return ["to-number", ["get", `fishing${frame + i}`]]
-    })
-    const timestampsSum = ['+'].concat(timestamps)
-    const heatmapWeightExpr = [
-      '*',
-      timestampsSum,
-      3
-    ]
+    // const timestamps = (new Array(100)).fill(null).map((v, i) => {
+    //   return ["to-number", ["get", `t_${frame + i}`]]
+    // })
+    // const timestampsSum = ['+'].concat(timestamps)
+    // const heatmapWeightExpr = [
+    //   '/',
+    //   timestampsSum,
+    //   10
+    // ]
+    
 
     // Just get - ing value - medium
-    // const heatmapWeightExpr = ["to-number", ["get", `fishing${frame}`]]
+    const heatmapWeightExpr = ["to-number", ["get", `t_${frame}`]]
 
     // Just checking value existence - medium
     // const heatmapWeightExpr = ["case", ["has", `fishing${frame}`], 0, 5]
@@ -345,7 +356,7 @@ const applyFilter = () => {
     })
     console.log(frame)
 
-    frame++
+    frame += 1
 }
 
 const loadMap = () => {
@@ -356,15 +367,80 @@ const loadMap = () => {
   })
   map.showTileBoundaries = true
 
-  setTimeout(() => {
-    const interval = setInterval(() => {
-      applyFilter()
-      if (frame > 150) {
-        clearInterval(interval)
+  map.on('click', () => {
+    map.setLayoutProperty('heatmap', 'visibility', 'none')
+    const f = map.querySourceFeatures('heatmap-tiles', {
+      sourceLayer
+    })
+    const geojson = {
+      "type":"FeatureCollection",
+      "features": f
+    }
+    console.log(geojson)
+    map.addSource(
+      'heatmap-tiles-geojson',
+      {
+        type: 'geojson',
+        data: geojson
       }
-    }, 50)
-  }, 10000);
-  
+    )
+
+    map.addLayer(
+      {
+        "id": "heatmap2",
+        "type": "heatmap",
+        "source": "heatmap-tiles-geojson",
+        "paint": {
+          'heatmap-radius': [
+            "interpolate",
+            [ "exponential", 2 ],
+            [ "zoom" ],
+            0,
+            baseRadius,
+            16,
+            baseRadius * 256
+          ],
+          'heatmap-intensity': [
+            "interpolate",
+            [ "exponential", 2 ],
+            [ "zoom" ],
+            0,
+            baseIntensity,
+            16,
+            16 * baseIntensity
+          ],
+          'heatmap-intensity-transition': {
+              "duration": 0,
+              "delay": 0
+          },
+          'heatmap-opacity': [
+            "interpolate",
+            ["linear"],
+            [ "zoom" ],
+            0,
+            1,
+            8,
+            1,
+            10,
+            0
+          ]
+        }
+      }
+    )
+
+  })
+
+  // setTimeout(() => {
+  //   const interval = setInterval(() => {
+  //     applyFilter()
+  //     if (frame > 800) {
+  //       clearInterval(interval)
+  //     }
+  //   }, 50)
+  //   document.querySelector('#stop').addEventListener('click', () => {
+  //     clearInterval(interval)
+  //   })
+  // }, 2000);
 
 }
 
@@ -374,7 +450,6 @@ if (!useTiles) {
     .then(heatmapData => {
       console.log('loaded')
       style.sources.heatmap.data = heatmapData
-      // style.layers[2].paint['heatmap-weight']
       loadMap()
     })
 } else {

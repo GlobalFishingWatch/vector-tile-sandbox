@@ -44,8 +44,8 @@ var style = {
         "id": "points",
         "type": "circle",
         "source": "points",
-        // "source-layer": sourceLayer,
-        "source-layer": "chile_transport",
+        "source-layer": sourceLayer,
+        // "source-layer": "chile_transport",
         "layout": {},
         "paint": {
           "circle-radius": 3,
