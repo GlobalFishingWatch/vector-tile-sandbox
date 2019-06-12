@@ -2,28 +2,29 @@
 
 const fs = require('fs')
 const tilebelt = require('@mapbox/tilebelt')
+const argv = require('yargs').argv
 
 const z = parseInt(process.argv[2])
 const x = parseInt(process.argv[3])
 const y = parseInt(process.argv[4])
-const tileGridDivision = parseInt(process.argv[5]) || 256
-const startTimestampSeconds = parseInt(process.argv[6]) || new Date(2012,0,1).getTime()
-let timestampStepSeconds = process.argv[7] || 'hour'
-if (timestampStepSeconds === 'hour') {
-  timestampStepSeconds = 3600
-} else if (timestampStepSeconds === 'day') {
-  timestampStepSeconds = 86400
+const gridResolution = parseInt(argv.gridResolution) || 256
+const startTimestamp = parseInt(argv.startTimestamp) || new Date(2012,0,1).getTime()
+let timeResolution = argv.timeResolution || 'hour'
+if (timeResolution === 'hour') {
+  timeResolution = 3600
+} else if (timeResolution === 'day') {
+  timeResolution = 86400
 }
-timestampStepSeconds = parseInt(timestampStepSeconds)
-// console.warn('timestamp range: ', '\n')
-const useArray = (process.argv[8] === 'true') ? true : false
-const addPlaybackData = (process.argv[9] === 'true') ? true : false
-const debug = (process.argv[10] === 'true') ? true : false
+timeResolution = parseInt(timeResolution)
+
+const useArray = (argv.useArray === 'true') ? true : false
+const addPlaybackData = (argv.addPlaybackData === 'true') ? true : false
+const debug = (argv.debug === 'true') ? true : false
 
 const cells = []
 const [minLng, minLat, maxLng, maxLat] = tilebelt.tileToBBOX([x,y,z])
-const cellSizeLng = (maxLng - minLng) / tileGridDivision
-const cellSizeLat = (maxLat - minLat) / tileGridDivision
+const cellSizeLng = (maxLng - minLng) / gridResolution
+const cellSizeLat = (maxLat - minLat) / gridResolution
 let maxQuantizedTimestamp = 0
 
 
@@ -84,14 +85,14 @@ const addGridCell = (rawFeature) => {
   gridCell.properties.numPoints++
 
   const timestampSeconds = feature.properties.timestamp
-  const offsetedTimestamp = timestampSeconds - startTimestampSeconds
-  const quantizedTimestamp = Math.floor(offsetedTimestamp / timestampStepSeconds)
+  const offsetedTimestamp = timestampSeconds - startTimestamp
+  const quantizedTimestamp = Math.floor(offsetedTimestamp / timeResolution)
 
   if (quantizedTimestamp < 0) {
     console.error('ERROR: invalid quantized timestamp', quantizedTimestamp)
     console.error('original timestamp:', feature.properties.timestamp)
-    console.error('start (s):', startTimestampSeconds)
-    console.error('step (s):', timestampStepSeconds)
+    console.error('start (s):', startTimestamp)
+    console.error('step (s):', timeResolution)
   }
 
   if (quantizedTimestamp > maxQuantizedTimestamp) {
