@@ -20,6 +20,7 @@ timeResolution = parseInt(timeResolution)
 const useArray = (argv.useArray === 'true') ? true : false
 const addPlaybackData = (argv.addPlaybackData === 'true') ? true : false
 const debug = (argv.debug === 'true') ? true : false
+const geometry = argv.geometry || 'point'
 
 const cells = []
 const [minLng, minLat, maxLng, maxLat] = tilebelt.tileToBBOX([x,y,z])
@@ -43,6 +44,8 @@ const makeGridCell = (lngGridded, latGridded, cellSizeLng, cellSizeLat, baseLng,
   // let fishing = new Array(numIntervals).fill(0);
   const lng = baseLng + (lngGridded * cellSizeLng) + cellSizeLng / 2
   const lat = baseLat + (latGridded * cellSizeLat) + cellSizeLat / 2
+
+  
 
   const gridCell = {
     type: 'Feature',
