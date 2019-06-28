@@ -3,10 +3,10 @@
 # start ts panama carriers: 1325376000 - 1453262400
 
 # transporters 64 day ---
-tippecanoe data/chile/transporters.csv -o data/chile/transporters_day_64.mbtiles --force --layer=test --no-tile-compression --minimum-zoom=5 --maximum-zoom=5 --read-parallel --no-feature-limit --no-tile-size-limit -r1 -C 'node --max-old-space-size=8192 scripts/make-grid-tippecanoe.js $1 $2 $3 --startTimestamp=1548979203 --gridResolution=64 --timeResolution=day'
+tippecanoe data/chile/transporters.csv -o data/chile/transporters_day_64_hour_array.mbtiles --force --layer=default --minimum-zoom=5 --maximum-zoom=5 --read-parallel --no-feature-limit --no-tile-size-limit -r1 -C 'node --max-old-space-size=8192 scripts/make-grid-tippecanoe.js $1 $2 $3 --startTimestamp=1548979203 --gridResolution=64 --timeResolution=hour --useArray=true'
 
-rm -rf data/chile/transporters_day_64
-mb-util --image_format=pbf data/chile/transporters_day_64.mbtiles data/chile/transporters_day_64 --silent
+rm -rf data/chile/transporters_day_64_hour_array
+mb-util --image_format=pbf data/chile/transporters_day_64_hour_array.mbtiles data/chile/transporters_day_64_hour_array --silent
 
 # panama 64 day (+) ---
 # tippecanoe data/chile/panama_carriers.csv -o data/chile/panama_carriers_day_64.mbtiles --force --layer=test --no-tile-compression --minimum-zoom=5 --maximum-zoom=5 --read-parallel --no-feature-limit --no-tile-size-limit -r1 -C 'node --max-old-space-size=8192 scripts/make-grid-tippecanoe.js $1 $2 $3 64 1325376000 day false true'

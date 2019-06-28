@@ -9,7 +9,7 @@ app.use(express.static(path.join(__dirname, '../data'), {
     // console.log(res)
     res.set('Content-Encoding', 'gzip')
   },
-  fallthrough: false
+  // fallthrough: false
 }))
 
 app.listen(9090);

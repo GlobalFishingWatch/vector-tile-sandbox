@@ -3,12 +3,12 @@
 const fs = require('fs')
 const tilebelt = require('@mapbox/tilebelt')
 const argv = require('yargs').argv
+const lodash = require('lodash')
 
 const z = parseInt(process.argv[2])
 const x = parseInt(process.argv[3])
 const y = parseInt(process.argv[4])
-const gridResolution = parseInt(argv.gridResolution) || 256
-const startTimestamp = parseInt(argv.startTimestamp) || new Date(2012,0,1).getTime()
+
 let timeResolution = argv.timeResolution || 'hour'
 if (timeResolution === 'hour') {
   timeResolution = 3600
@@ -17,15 +17,21 @@ if (timeResolution === 'hour') {
 }
 timeResolution = parseInt(timeResolution)
 
-const useArray = (argv.useArray === 'true') ? true : false
-const addPlaybackData = (argv.addPlaybackData === 'true') ? true : false
-const debug = (argv.debug === 'true') ? true : false
-const geometry = argv.geometry || 'point'
+const params = {
+  gridResolution: parseInt(argv.gridResolution) || 256,
+  startTimestamp: parseInt(argv.startTimestamp) || new Date(2012,0,1).getTime(),
+  timeResolution,
+  useArray: (argv.useArray === 'true') ? true : false,
+  aggregateUnits: parseInt(argv.aggregateUnits) || null,
+  debug: (argv.debug === 'true') ? true : false,
+  geometryType: argv.geometryType || 'point'
+}
+
 
 const cells = []
 const [minLng, minLat, maxLng, maxLat] = tilebelt.tileToBBOX([x,y,z])
-const cellSizeLng = (maxLng - minLng) / gridResolution
-const cellSizeLat = (maxLat - minLat) / gridResolution
+const cellSizeLng = (maxLng - minLng) / params.gridResolution
+const cellSizeLat = (maxLat - minLat) / params.gridResolution
 let maxQuantizedTimestamp = 0
 
 
@@ -45,8 +51,6 @@ const makeGridCell = (lngGridded, latGridded, cellSizeLng, cellSizeLat, baseLng,
   const lng = baseLng + (lngGridded * cellSizeLng) + cellSizeLng / 2
   const lat = baseLat + (latGridded * cellSizeLat) + cellSizeLat / 2
 
-  
-
   const gridCell = {
     type: 'Feature',
     geometry: {
@@ -62,13 +66,14 @@ const makeGridCell = (lngGridded, latGridded, cellSizeLng, cellSizeLat, baseLng,
       numPoints: 0,
       // fishing
     },
+    quantizedTimestamps: [],
     tippecanoe
   }
   return gridCell
 }
 
 
-const addGridCell = (rawFeature) => {
+const addFeature = (rawFeature) => {
   const feature = JSON.parse(rawFeature)
   const [lng, lat] = feature.geometry.coordinates
 
@@ -88,58 +93,69 @@ const addGridCell = (rawFeature) => {
   gridCell.properties.numPoints++
 
   const timestampSeconds = feature.properties.timestamp
-  const offsetedTimestamp = timestampSeconds - startTimestamp
-  const quantizedTimestamp = Math.floor(offsetedTimestamp / timeResolution)
+  const offsetedTimestamp = timestampSeconds - params.startTimestamp
+  const quantizedTimestamp = Math.floor(offsetedTimestamp / params.timeResolution)
 
   if (quantizedTimestamp < 0) {
     console.error('ERROR: invalid quantized timestamp', quantizedTimestamp)
     console.error('original timestamp:', feature.properties.timestamp)
-    console.error('start (s):', startTimestamp)
-    console.error('step (s):', timeResolution)
+    console.error('start (s):', params.startTimestamp)
+    console.error('step (s):', params.timeResolution)
   }
 
   if (quantizedTimestamp > maxQuantizedTimestamp) {
     maxQuantizedTimestamp = quantizedTimestamp
   }
-
-  if (useArray) {
-    if (gridCell.properties.t === undefined) {
-      gridCell.properties.t = new Array(quantizedTimestamp).fill(0)
-    }
-    if (gridCell.properties.t[quantizedTimestamp] === undefined) {
-      gridCell.properties.t[quantizedTimestamp] = 1
-    } else {
-      gridCell.properties.t[quantizedTimestamp]++
-    }
-  } else {
-    const timestampKey = 't_' + quantizedTimestamp
-    if (gridCell.properties[timestampKey] === undefined) {
-      gridCell.properties[timestampKey] = 1
-    } else {
-      gridCell.properties[timestampKey]++
-    }
-  }
+  gridCell.quantizedTimestamps.push(quantizedTimestamp)
+  
 }
 
 stdin.on('end', function () {
   const inputJSON = inputChunks.join('')
   const geoJSONChunks = inputJSON.split('\n')
   try {
+    // read json line by line and aggregate to grid points
     const newChunks = geoJSONChunks.map(rawFeature => {
       if (rawFeature.trim() !== '') {
-        addGridCell(rawFeature)
+        addFeature(rawFeature)
       }
     })
 
-    if (addPlaybackData) {
-      const OFFSET = 30
+    // aggregate timestamps
+    cells.forEach(gridCell => {
+      gridCell.quantizedTimestamps.forEach(quantizedTimestamp => {
+        if (params.useArray) {
+          // gets encoded as string...... :(
+          if (gridCell.properties.arr === undefined) {
+            gridCell.properties.arr = new Array(maxQuantizedTimestamp).fill(0)
+          }
+          if (gridCell.properties.arr[quantizedTimestamp] === undefined) {
+            gridCell.properties.arr[quantizedTimestamp] = 1
+          } else {
+            gridCell.properties.arr[quantizedTimestamp]++
+          }
+        } else {
+          const timestampKey = 't_' + quantizedTimestamp
+          if (gridCell.properties[timestampKey] === undefined) {
+            gridCell.properties[timestampKey] = 1
+          } else {
+            gridCell.properties[timestampKey]++
+          }
+        }
+      })
+      // this is not needed in final tiles
+      delete gridCell.quantizedTimestamps
+    })
+    
+    // aggregate wy sliding time period (playback mode)
+    if (params.aggregateUnits !== null) {
       cells.forEach(cell => {
         let currentValue = 0
         for (let t = 0; t<maxQuantizedTimestamp; t++) {
-          if (t <= OFFSET) {
+          if (t <= params.aggregateUnits) {
             currentValue += (cell.properties['t_'+t] === undefined) ? 0 : cell.properties['t_'+t]
           } else {
-            const timestampOffset = (t - OFFSET)
+            const timestampOffset = (t - params.aggregateUnits)
             const offsetedTimestampKey = 't+' + timestampOffset
             if (currentValue > 0) {
               cell.properties[offsetedTimestampKey] = currentValue
@@ -155,13 +171,13 @@ stdin.on('end', function () {
     // [[x,y,z], [minLng, minLat, maxLng, maxLat], cellSizeLng, cellSizeLat, cells.length, JSON.stringify(testJSON)].join('\n'))
     
     const outJSON = cells.map(f => JSON.stringify(f)).join('\n')
-    if (debug) {
-      fs.writeFileSync(`./data/test-out/${z}${x}${y}`, outJSON)
+    if (params.debug) {
+      fs.writeFileSync(`./data/log/tiles/${z}${x}${y}`, outJSON)
     }
     stdout.write(outJSON)
   } catch (e) {
     console.error('make-grid error at tile:',z,x,y, e, '\n')
     stdout.write(inputJSON)
-    fs.writeFileSync(`./data/test-out/make-grid.log`, `error: ${e}`)
+    fs.writeFileSync(`./data/log/make-grid.log`, `error: ${e}`)
   }
 });
