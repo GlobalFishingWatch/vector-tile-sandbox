@@ -10,8 +10,8 @@
   
 ### For running Yarn
 
-1- Install Yarn (Require Node)
-2- Install ` npm install http-server -g` (https://www.npmjs.com/package/http-server)
+1. Install Yarn (Require Node)
+2. Install ` npm install http-server -g` (https://www.npmjs.com/package/http-server)
 
 ## Generate
 
@@ -24,6 +24,18 @@ Use tippecanoe and mbutil. See `scripts/chile.sh` for an example:
 ```
 
 NOTE: Make sure the data folder is on the root folder.
+
+### generate random points
+
+This is used to prepare dummy data for testing purposes.
+It will generate a number of point features (avoiding landmass for a slightly more realistic effect), in a GeoJSON file. Each point has a random `datetime` timestamp property, as well as a random `type` ranging from 0 to 4.
+
+```
+node ./scripts/generate-random-points [path] [numFeatures]
+node ./scripts/generate-random-points data/test.json 40000
+```
+
+
 
 ## Serve 
 
@@ -40,7 +52,7 @@ Use url params to load correct tileset:
 - `dataset`: path to dataset, appended to local server url and prepended to zxy
 - `sourceLayer`: matches tippecanoe param `--layer` 
 
-http://localhost:9091/?dataset=chile/transporters&sourceLayer=chile_transporters
+http://localhost:9091/viewer/?dataset=chile/transporters&sourceLayer=chile_transporters
 
 ## Inspect a tile
 
